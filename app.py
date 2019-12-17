@@ -90,13 +90,6 @@ def register():
 
     return render_template('register.html', form=form)
 
-con = psycopg2.connect("dbname=myflaskapp user=postgres password=toor")
-cur = con.cursor()
-
-result = cur.execute("SELECT * FROM public.users")
-
-print(result, flush=True)
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -116,7 +109,7 @@ def login():
             data = cur.fetchone()
             #for u in cur.fetchone():
             #    result_data = u.__dict__
-            password = result_data['password']
+            password = data['password']
 
             if sha256_crypt.verify(password_candidate, password):
                 app.logger.info('PASSWORD MATCHED')
