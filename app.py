@@ -5,6 +5,7 @@ from datetime import datetime
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 import psycopg2
+import sys
 
 app = Flask(__name__)
 
@@ -88,6 +89,42 @@ def register():
         return redirect(url_for('index'))
 
     return render_template('register.html', form=form)
+
+con = psycopg2.connect("dbname=myflaskapp user=postgres password=toor")
+cur = con.cursor()
+
+result = cur.execute("SELECT * FROM public.users")
+
+print(result, flush=True)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+
+        username = request.form['username']
+        password_candidate = request.form['password']
+
+        con = psycopg2.connect("dbname=myflaskapp user=postgres password=toor")
+        cur = con.cursor()
+
+        result = cur.execute("SELECT * FROM users WHERE username = %s", [username])
+
+        print("test", flush=True)
+        sys.stdout.flush()
+
+        if result > 0:
+            data = cur.fetchone()
+            #for u in cur.fetchone():
+            #    result_data = u.__dict__
+            password = result_data['password']
+
+            if sha256_crypt.verify(password_candidate, password):
+                app.logger.info('PASSWORD MATCHED')
+
+        else:
+            app.logger.info('NO USER')
+
+    return render_template('login.html')
 
 if __name__ == '__main__':
     app.secret_key = 'secret123'
